@@ -378,17 +378,47 @@
         </svg>
         Try Again
     </button>
+    <div class="auto-retry">
+        Auto-retrying in <span class="countdown" id="countdown-text">30</span> seconds…
+    </div>
+</div>
 
 <script>
     // Display current time
     document.getElementById('checked-time').textContent = new Date().toLocaleTimeString();
 
+    let countdownSec = 30;
+
+    function updateCountdown() {
+        countdownSec--;
+        document.getElementById('countdown-text').textContent = countdownSec;
+        if (countdownSec <= 0) {
+            checkServer();
+        }
+    }
+
+    let timer = setInterval(updateCountdown, 1000);
+
     function checkServer() {
-        // Since this page is hosted on secure HTTPS (GitHub), modern browsers strictly 
-        // block background fetch() requests to insecure HTTP (your local server).
-        // Therefore, we cannot auto-poll. We simply redirect the user back to the 
-        // local site when they click the button. If it's online, it works!
-        window.location.href = 'http://MemeMediaLibrary.local';
+        clearInterval(timer);
+        document.getElementById('countdown-text').textContent = '…';
+
+        // MAGIC TRICK: Browsers block HTTPS -> HTTP requests (Mixed Content)
+        // EXCEPT when targeting "localhost" or "127.0.0.1" which are considered secure!
+        // We use mode 'no-cors' so we don't even need special headers from the server.
+        // If it succeeds, the server is running. If it fails, the server is still offline!
+        fetch('http://127.0.0.1/', { mode: 'no-cors', cache: 'no-store' })
+            .then(() => {
+                // SERVER IS BACK ONLINE! Redirect back to your custom domain.
+                window.location.href = 'http://MemeMediaLibrary.local';
+            })
+            .catch(() => {
+                // SERVER IS STILL OFFLINE. Loop the countdown!
+                document.getElementById('checked-time').textContent = new Date().toLocaleTimeString();
+                countdownSec = 30;
+                document.getElementById('countdown-text').textContent = countdownSec;
+                timer = setInterval(updateCountdown, 1000);
+            });
     }
 </script>
 </body>
