@@ -369,10 +369,6 @@
             <span class="status-label">Checked At</span>
             <span class="status-value" id="checked-time">—</span>
         </div>
-        <div class="status-row">
-            <span class="status-label">Next Auto-Check</span>
-            <span class="status-value"><span class="countdown" id="countdown">30</span>s</span>
-        </div>
     </div>
 
     <button class="retry-btn" onclick="checkServer()">
@@ -383,47 +379,16 @@
         Try Again
     </button>
 
-    <div class="auto-retry">
-        Auto-retrying in <span class="countdown" id="countdown-text">30</span> seconds…
-    </div>
-</div>
-
 <script>
     // Display current time
     document.getElementById('checked-time').textContent = new Date().toLocaleTimeString();
 
-    let countdownSec = 30;
-
-    function updateCountdown() {
-        countdownSec--;
-        document.getElementById('countdown').textContent = countdownSec;
-        document.getElementById('countdown-text').textContent = countdownSec;
-        if (countdownSec <= 0) {
-            checkServer();
-        }
-    }
-
-    let timer = setInterval(updateCountdown, 1000);
-
     function checkServer() {
-        // Try fetching the main page
-        clearInterval(timer);
-        document.getElementById('countdown').textContent = '…';
-        document.getElementById('countdown-text').textContent = '…';
-
-        fetch('/', { cache: 'no-store', mode: 'no-cors' })
-            .then(res => {
-                // If server is back, reload the page fully (bypass service worker cache)
-                window.location.reload();
-            })
-            .catch(() => {
-                // Still offline, reset countdown
-                document.getElementById('checked-time').textContent = new Date().toLocaleTimeString();
-                countdownSec = 30;
-                document.getElementById('countdown').textContent = countdownSec;
-                document.getElementById('countdown-text').textContent = countdownSec;
-                timer = setInterval(updateCountdown, 1000);
-            });
+        // Since this page is hosted on secure HTTPS (GitHub), modern browsers strictly 
+        // block background fetch() requests to insecure HTTP (your local server).
+        // Therefore, we cannot auto-poll. We simply redirect the user back to the 
+        // local site when they click the button. If it's online, it works!
+        window.location.href = 'http://MemeMediaLibrary.local';
     }
 </script>
 </body>
